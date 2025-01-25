@@ -303,8 +303,8 @@ public final class Main {
   public static class MyPipeline implements VisionPipeline {
     public Mat returnedImg = new Mat();
     public int numTargetsDetected;
-    public double centerOfAmpX;
-    public double centerOfAmpY;
+    public double centerOfReefX;
+    public double centerOfReefY;
     public int centerOfImageX;
     public int centerOfImageY;
 
@@ -349,9 +349,12 @@ public final class Main {
         //copyMakeBorder(mat, myBorder, border, border, border, border, BORDER_REPLICATE);
         org.opencv.imgproc.Imgproc.drawContours(mat, listOfContours, -1, myBorderColor, borderWidth);
         int ID = detections[i].getId();
-        if(ID == 5 || ID == 6){
-          centerOfAmpX = detections[i].getCenterX();
-          centerOfAmpY = detections[i].getCenterY();
+
+        // IDs are for three sides of red or blue reef facing starting line 
+        if(ID == 6 || ID == 7 || ID == 8 || ID == 17 || ID == 18 || ID == 19){
+          centerOfReefX = detections[i].getCenterX();
+          System.out.println("Reef ID " + ID +" detected!");
+          centerOfReefY = detections[i].getCenterY();
         }
       }
       org.opencv.imgproc.Imgproc.circle(mat, new Point(5,5), 4, new Scalar(0, 255, 0));
@@ -402,10 +405,10 @@ public final class Main {
       CvSource goalDrawnVideo = CameraServer.putVideo("Goal Vision Stream (Buddy)", 1280, 720);
       IntegerTopic num = ntinst.getIntegerTopic("/datatable/num_targets_detected");
       final IntegerPublisher intPub = num.publish();
-      DoubleTopic centerX = ntinst.getDoubleTopic("/datatable/center_of_amp_X");
-      final DoublePublisher centerPubX = centerX.publish();
-      DoubleTopic centerY = ntinst.getDoubleTopic("/datatable/center_of_amp_Y");
-      final DoublePublisher centerPubY = centerY.publish();
+      DoubleTopic centerReefX = ntinst.getDoubleTopic("/datatable/center_of_reef_X");
+      final DoublePublisher centerPubX = centerReefX.publish();
+      DoubleTopic centerReefY = ntinst.getDoubleTopic("/datatable/center_of_reef_Y");
+      final DoublePublisher centerPubY = centerReefY.publish();
       IntegerTopic centerImageX = ntinst.getIntegerTopic("/datatable/center_of_image_X");
       final IntegerPublisher imagePubX = centerImageX.publish();
       IntegerTopic centerImageY = ntinst.getIntegerTopic("/datatable/center_of_image_Y");
@@ -420,8 +423,8 @@ public final class Main {
               new MyPipeline(), pipeline -> {
                 goalDrawnVideo.putFrame(pipeline.returnedImg);
                 intPub.set(pipeline.numTargetsDetected);
-                centerPubX.set(pipeline.centerOfAmpX);
-                centerPubY.set(pipeline.centerOfAmpY);
+                centerPubX.set(pipeline.centerOfReefX);
+                centerPubY.set(pipeline.centerOfReefY);
                 imagePubX.set(pipeline.centerOfImageX);
                 imagePubY.set(pipeline.centerOfImageY);
         // do something with pipeline results
